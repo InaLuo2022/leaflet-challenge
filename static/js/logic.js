@@ -1,7 +1,7 @@
 // Creating the map object
 let EarthQuakeMap = L.map("map", {
-  center: [61.8251, -149.6045],
-  zoom: 4
+  center: [34.8812, 14.153],
+  zoom: 2
 });
 
 // Adding the tile layer
