@@ -32,25 +32,6 @@ d3.json(url_tectonic).then(function(data) {
     polygons_layers.setStyle({color: "yellow", fill: 0})
 });
 
-//d3.json(url_tectonic).then(function(data){
-
-    //for (let i = 0; i < data.features.length; i++) {
-        //let lanlngs = [];
-        //for (let j = 0; j < data.features[0].geometry.coordinates[0].length; j++) {
-            
-            //lanlngs.push([data.features[0].geometry.coordinates[0][j][1], data.features[0].geometry.coordinates[0][j][0]]);
-            //console.log(lanlngs);
-        //};
-
-        //polygons.push(L.polygon(lanlngs, {color: 'yellow', fill: false}));
-        
-    //});
-//});
-
-//polygons_layers = L.layerGroup(polygons);
-
-// Creating a new marker:
-// We pass in some initial options, and then add the marker to the map by using the addTo() method.
 let url_earthquake = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson";
 
 // Create legend to show earthquake depth
@@ -70,63 +51,48 @@ legend.onAdd = function (map) {
 
 legend.addTo(EarthQuakeMap_2)
 
-// Getting our GeoJSON data
-//let circle_layers = L.geoJson().addTo(EarthQuakeMap_2);
+// create a function for set colours for circle markers
+function circle_fillcolor (data) {
+    let circle_fillColor = ''
+    if (data <= 10 & data > -10) {
+        circle_fillColor = '#FEB24C';
+        }
+    else if (data <= 30 & data > 10) {
+        circle_fillColor = '#FD8D3C';
+        }
+    else if (data <= 50 & data > 30) {
+        circle_fillColor = '#FC4E2A';
+        }
+    else if (data <= 70 & data > 50) {
+        circle_fillColor = '#E31A1C';
+        }
+    else if (data <= 90 & data > 70) {
+        circle_fillColor = '#BD0026';
+        }
+    else if (data > 90) {
+        circle_fillColor = '#7a0177';
+    };
+    return circle_fillColor
+}
 
-//d3.json(url_earthquake).then(function(data){
-    //circle_layers.addData(data.features);
-    
-//});
+let circle_layers = L.geoJson(null, {
+    pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+            radius: feature.properties.mag^10,  // set the radius of the circle marker
+            fillColor: circle_fillcolor(feature.geometry.coordinates[2]), // set the colors of the circle marker
+            color: circle_fillcolor(feature.geometry.coordinates[2]),
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).bindPopup('<p>'+"Magnitude: "+feature.properties.mag+'</p>'
+                        + '<p>'+ "Coordinates: "+feature.geometry.coordinates+'</p>');
+    }
+})
 
-
-let circles = []; 
 d3.json(url_earthquake).then(function(data) {
 
-    for (let i = 0; i < data.features.length; i++) {
-
-        let earthquake_lan = data.features[i].geometry.coordinates[1];
-        let earthquake_lon = data.features[i].geometry.coordinates[0];
-        let earthquake_mag = data.features[i].properties.mag;
-        let earthquake_depth = data.features[i].geometry.coordinates[2]
-
-        let circle_fillColor = [];
-        let circle_radius = 30000 * earthquake_mag;
-
-        if (earthquake_depth <= 10 & earthquake_depth > -10) {
-            circle_fillColor = '#FEB24C';
-            }
-        else if (earthquake_depth <= 30 & earthquake_depth > 10) {
-            circle_fillColor = '#FD8D3C';
-            }
-        else if (earthquake_depth <= 50 & earthquake_depth > 30) {
-            circle_fillColor = '#FC4E2A';
-            }
-        else if (earthquake_depth <= 70 & earthquake_depth > 50) {
-            circle_fillColor = '#E31A1C';
-            }
-        else if (earthquake_depth <= 90 & earthquake_depth > 70) {
-            circle_fillColor = '#BD0026';
-            }
-        else if (earthquake_depth > 90) {
-            circle_fillColor = '#7a0177';
-        };
-
-        // let paragraphs = '<p>' + "Magnitude: " + earthquake_mag +'</p>'
-                //+ '<p>'+ "Coordinates: " + earthquake_lan + "," + earthquake_lon + '</p>'
-                //+ '<p>'+ "Earthquake Depth: " + earthquake_depth + "km" + '</p>';
-        
-        circles.push(L.circle([earthquake_lan, earthquake_lon], {
-            color: circle_fillColor,
-            weight: 2,
-            fillColor: circle_fillColor,
-            fillOpacity: 0.8,
-            radius: circle_radius,
-        }).addData(EarthQuakeMap_2));
-
-    };
-});
-
-let circle_layers = L.layerGroup(circles);
+        circle_layers.addData(data.features);
+})
 
 let overlayMaps = {
     Tectonic_Plates: polygons_layers,
